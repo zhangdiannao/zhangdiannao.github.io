@@ -19,7 +19,7 @@
             margin-left: 20%;
             margin-right: 20%;
             width: 60%;
-            height: 8rem;
+            height: 6rem;
         }
     </style>
 </head>
@@ -27,8 +27,10 @@
 <body>
     <h1>BLE调试</h1>
     <button onclick="connect()">连接设备</button>
-    <button onclick="turn_on()">开灯</button>
-    <button onclick="turn_off()">关灯</button>
+    <button onclick="turn_on()">打开风扇</button>
+    <button onclick="turn_off()">关闭风扇</button>
+    <button onclick="led_on()">打开灯光</button>
+    <button onclick="led_off()">关闭灯光</button>
     <button onclick="disconnect()">断开连接</button>
 </body>
 
@@ -76,7 +78,7 @@
         let value = event.target.value
         console.log(decoder.decode(value));
     }
-    //开灯
+    //打开风扇
     function turn_on() {
         if (!DEVICE) {
             console.error("设备未连接!");
@@ -87,9 +89,9 @@
         let encoder = new TextEncoder();
         let data = encoder.encode(stringToWrite);
         characteristicRX.writeValue(data);
-        console.log("开灯")
+        console.log("打开风扇")
     }
-    //关灯
+    //关闭风扇
     function turn_off() {
         if (!DEVICE) {
             console.error("设备未连接!");
@@ -100,12 +102,39 @@
         let encoder = new TextEncoder();
         let data = encoder.encode(stringToWrite);
         characteristicRX.writeValue(data);
-        console.log("关灯")
+        console.log("关闭风扇")
+    }
+    //打开灯光
+    function led_on() {
+        if (!DEVICE) {
+            console.error("设备未连接!");
+            alert("设备未连接!")
+            return;
+        }
+        let stringToWrite = "2";
+        let encoder = new TextEncoder();
+        let data = encoder.encode(stringToWrite);
+        characteristicRX.writeValue(data);
+        console.log("关闭灯光")
+    }
+    //关闭灯光
+    function led_off() {
+        if (!DEVICE) {
+            console.error("设备未连接!");
+            alert("设备未连接!")
+            return;
+        }
+        let stringToWrite = "3";
+        let encoder = new TextEncoder();
+        let data = encoder.encode(stringToWrite);
+        characteristicRX.writeValue(data);
+        console.log("关闭灯光")
     }
     //断开连接
     function disconnect() {
         if (!DEVICE) {
             console.error("设备未连接!");
+            alert("设备未连接!")
             return;
         }
         DEVICE.gatt.disconnect()
