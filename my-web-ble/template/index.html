@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB-BLE</title>
+</head>
+
+<body>
+    <button onclick="button_clicked_handler()">连接设备</button>
+    <button onclick="button0_clicked_handler()">订阅RX</button>
+    <button onclick="button1_clicked_handler()">订阅TX</button>
+    <button onclick="button2_clicked_handler()">发送数据</button>
+</body>
+
+<script>
+    let myCharacteristic;
+    let myCharacteristicTX;
+    let myService;
+
+    let option = {
+        acceptAllDevices: true,
+        optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
+    }
+    function button_clicked_handler() {
+        console.log(" 开始扫描设备")
+        navigator.bluetooth.requestDevice(option).then(device => {
+            console.log("尝试连接GATT服务器")
+            return device.gatt.connect()
+        }).then(server => {
+            console.log("获取服务");
+            return server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e');
+        }).then(service => {
+            console.log("获取特征")
+            myService = service;
+        }).catch(error => {
+            console.log("发生错误:" + error)
+        })
+    }
+    //订阅RX
+    function button0_clicked_handler() {
+        if (!myService) {
+            console.error("设备未连接");
+            return;
+        }
+        myService.getCharacteristic('6e400002-b5a3-f393-e0a9-e50e24dcca9e').then(characteristic => {
+            console.log('获取描述符');
+            myCharacteristicTX = characteristic;
+
+        }).catch(error => {
+            console.log("发生错误:" + error)
+        })
+    }
+    //回调函数
+    const decoder = new TextDecoder('utf-8');
+    function handleNotifications(event) {
+        let value = event.target.value
+        console.log(decoder.decode(value));
+    }
+    //订阅函数
+    function button1_clicked_handler() {
+        if (!myService) {
+            console.error("设备未连接");
+            return;
+        }
+        myService.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e').then(characteristic => {
+            console.log("读取特征")
+            myCharacteristic = characteristic;
+            return myCharacteristic.startNotifications().then(() => {
+                console.log("开启通知");
+                myCharacteristic.addEventListener('characteristicvaluechanged',
+                    handleNotifications);
+            })
+        }).catch(error => {
+            console.log("发生错误:" + error)
+        })
+
+    }
+
+
+    //发送数据
+    function button2_clicked_handler() {
+        if (!myCharacteristicTX) {
+            console.error("设备未连接!")
+            return;
+        }
+        let stringToWrite = "Hello, World!";
+        let encoder = new TextEncoder();
+        let data = encoder.encode(stringToWrite);
+        myCharacteristicTX.writeValue(data);
+    }
+</script>
+
+</html>
